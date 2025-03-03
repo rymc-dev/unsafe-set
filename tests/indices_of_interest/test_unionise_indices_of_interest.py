@@ -1,0 +1,3 @@
+from unsafe_set_gen.indices_of_interest import unionise_indices_of_interest
+import pytest
+
