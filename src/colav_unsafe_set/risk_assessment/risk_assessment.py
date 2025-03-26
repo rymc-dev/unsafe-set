@@ -1,133 +1,87 @@
 import numpy as np
-from colav_unsafe_set.objects import DynamicObject
 import math
 from typing import Tuple
-
+from colav_unsafe_set.objects import (
+    Agent,
+    DynamicObstacle
+)
 
 def calc_cpa(
-    agent_object: DynamicObject, target_object: DynamicObject
+    agent_object: Agent, target_object: DynamicObstacle
 ) -> Tuple[float, float]:
     """
-    calculate DCPA and TCPA between agent and target
-    CPA based on this code: https://github.com/MelihAkdag/ships_collision_risk_calculations/blob/main/DCPA_TCPA_with_Python.ipynb
+    Calculate the Distance at Closest Point of Approach (DCPA) and
+    Time to Closest Point of Approach (TCPA) between two dynamic objects.
 
+    The calculation is performed only if TCPA > 0; otherwise,
+    DCPA and TCPA are set to NaN (or TCPA to infinity in the case of identical positions).
+
+    Parameters:
+        agent_object (DynamicObject): The dynamic object representing the agent.
+        target_object (DynamicObject): The dynamic object representing the target.
+
+    Returns:
+        Tuple[float, float]: A tuple containing (DCPA, TCPA)
     """
-    # # distance between agent and targetship
-    # distance = math.sqrt((target_object.configuration.pose.position.x - agent_object.configuration.pose.position.x)**2 + (target_object.configuration.pose.position.y - agent_object.configuration.pose.position.y) ** 2)
 
-    # # relative speed
-    # # target ship against agent vessel
-    # relative_speed = target_object.configuration.velocity - agent_object.configuration.velocity
+    # Extract 2D positions from agent and target objects.
+    p1 = np.array([
+        agent_object.position[0],
+        agent_object.position[1]
+    ])
+    p2 = np.array([
+        target_object.position[0],
+        target_object.position[1]
+    ])
 
-    # # alpha_r (True bearing of the targetship)
-    # if (target_object.configuration.pose.position.y - agent_object.configuration.pose.position.y >= 0) and (target_object.configuration.pose.x - agent_object.configuration.pose.position.x >= 0):
-    #     delta_alpha = 0
-    # elif (target_object.configuration.pose.position.y - agent_object.configuration.pose.position.y >= 0) and (target_object.configuration.pose.position.x - agent_object.configuration.pose.position.x < 0):
-    #     delta_alpha = 0
-    # elif (target_object.configuration.pose.position.y - agent_object.configuration.pose.position.y < 0) and (target_object.configuration.pose.position.x - agent_object.configuration.pose.position.x < 0):
-    #     delta_alpha = 2 * math.pi
-    # elif (target_object.configuration.pose.position.y - agent_object.configuration.pose.position.y < 0) and (target_object.configuration.pose.position.x - agent_object.configuration.pose.position.x >= 0):
-    #     delta_alpha = 2 * math.pi
-    # alpha_r = math.atan2((target_object.configuration.pose.position.y - agent_object.configuration.pose.position.y), (target_object.configuration.pose.position.x - agent_object.configuration.pose.position.x)) + delta_alpha
-
-    # # chi_r (Relative course of TS (from 0 to U_r))
-    # if (target_object.configuration.velocity - agent_object.configuration.velocity >= 0):
-    #     delta_chi = 0
-    # elif (target_object.configuration.velocity - agent_object.configuration.velocity >= 0):
-    #     delta_chi = 0
-    # elif (target_object.configuration.velocity - agent_object.configuration.velocity < 0):
-    #     delta_chi = 2 * math.pi
-    # elif (target_object.configuration.velocity - agent_object.configuration.velocity < 0):
-    #     delta_chi = 2 * math.pi
-    # chi_r = math.atan2((target_object.configuration.velocity - .v), (targetship.u - self.u)) + delta_chi
-
-    # # beta
-    # beta = chi_r - alpha_r - math.pi
-
-    # # DCPA and TCPA
-    # dcpa = abs(round(D_r * math.sin(beta), 2))
-    # tcpa = round((D_r * math.cos(beta)) / abs(U_r), 2)
-    # print("DCPA:", dcpa, " TCPA:", tcpa)
-
-    # # Collision Risk Index (CRI)
-    # cons_d = 0.8
-    # cons_t = 0.2
-    # d_safe = 1000
-    # t_safe = 1000
-    # if dcpa >= 1000 or tcpa >= 1000 or tcpa < 0:
-    #     cri = 0.0
-    # elif dcpa < 1000:
-    #     cri = 0.001 * (cons_d * (d_safe - dcpa) * cons_t * (t_safe - tcpa))
-    # print("CRI: ", cri)
-
-    # return dcpa, tcpa, cri
-
-    # Extract positions
-    p1 = np.array(
-        [
-            agent_object.configuration.pose.position.x,
-            agent_object.configuration.pose.position.y,
-        ]
+    # Calculate heading angles (theta) using quaternion components.
+    theta1 = np.arctan2(
+        2 * (agent_object.orientation[3] * agent_object.orientation[2]),
+        1 - 2 * (agent_object.orientation[2] ** 2)
+    )
+    theta2 = np.arctan2(
+        2 * (target_object.orientation[3] * target_object.orientation[2]),
+        1 - 2 * (target_object.orientation[2] ** 2)
     )
 
-    p2 = np.array(
-        [
-            target_object.configuration.pose.position.x,
-            target_object.configuration.pose.position.y,
-        ]
-    )
+    # Compute the velocity vectors based on speed and heading angle.
+    v1 = np.array([
+        agent_object.velocity * np.cos(theta1),
+        agent_object.velocity * np.sin(theta1),
+    ])
+    v2 = np.array([
+        target_object.velocity * np.cos(theta2),
+        target_object.velocity * np.sin(theta2),
+    ])
 
-    # Extract velocities
-    theta1 = 2 * np.arctan2(
-        agent_object.configuration.pose.orientation.z,
-        agent_object.configuration.pose.orientation.w,
-    )
-    theta2 = 2 * np.arctan2(
-        target_object.configuration.pose.orientation.z,
-        target_object.configuration.pose.orientation.w,
-    )
-
-    v1 = np.array(
-        [
-            agent_object.configuration.velocity * np.cos(theta1),
-            agent_object.configuration.velocity * np.sin(theta1),
-        ]
-    )
-
-    v2 = np.array(
-        [
-            target_object.configuration.velocity * np.cos(theta2),
-            target_object.configuration.velocity * np.sin(theta2),
-        ]
-    )
-
-    # Relative velocity and position
-    v_rel = v1 - v2
+    # Calculate the relative position and velocity.
     p_rel = p1 - p2
+    v_rel = v1 - v2
+    v_rel_norm_sq = np.dot(v_rel, v_rel)
 
-    # Check for perpendicular velocities (dot product should be near zero)
-    if np.abs(np.dot(v_rel, p_rel)) < 1e-6:  # Perpendicular if dot product is near zero
-        return np.inf, np.inf  # Return infinite TCPA if moving perpendicular
-
-    # Compute TCPA
-    tcpa = -np.dot(p_rel, v_rel) / (
-        np.linalg.norm(v_rel) ** 2 + 1e-6
-    )  # Avoid division by zero
-
-    # Ensure TCPA is positive (future time only)
-    if tcpa < 0:
-        tcpa = np.inf  # If negative, no future approach
-
-    # Compute DCPA
-    if np.isinf(tcpa):
-        # If TCPA is infinite, we compute DCPA based on the current state
-        dcpa = np.linalg.norm(
-            p1 - p2
-        )  # Distance between the two objects at current time
+    # Handle near-parallel or nearly stationary relative motion.
+    if v_rel_norm_sq < 1e-6:
+        # When objects are nearly stationary relative to each other.
+        if np.allclose(p_rel, [0, 0]):
+            # Identical positions: DCPA is undefined, TCPA is infinite.
+            dcpa = float('nan')
+            tcpa = float('inf')
+        else:
+            # Constant separation: TCPA is the time required to cover the gap at the agent's speed.
+            distance = np.linalg.norm(p_rel)
+            speed = np.linalg.norm(v1)
+            tcpa = distance / speed if speed > 0 else float('inf')
+            dcpa = distance
     else:
-        # If TCPA is valid, calculate the closest points at TCPA
-        closest_p1 = p1 + v1 * tcpa
-        closest_p2 = p2 + v2 * tcpa
-        dcpa = np.linalg.norm(closest_p1 - closest_p2)
+        # Standard CPA calculations.
+        tcpa = -np.dot(p_rel, v_rel) / v_rel_norm_sq
+        
+        # Only consider future encounters where TCPA > 0.
+        if tcpa > 0:
+            closest_position = p_rel + tcpa * v_rel
+            dcpa = np.linalg.norm(closest_position)
+        else:
+            dcpa = float('nan')
+            tcpa = float('nan')
 
     return dcpa, tcpa

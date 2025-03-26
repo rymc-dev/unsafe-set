@@ -1,0 +1,32 @@
+matrix:
+  width: 100.0
+  height: 100.0
+
+agent_vessel: 
+  position: [20.0, 20.0]
+  orientation: [1.0, 0.0, 0.0, 0.0]
+  velocity: 5.0
+  yaw_rate: 0.0
+  safety_radius: 5.0
+
+obstacles:
+  - tag: "dynamic_obstacle_1"
+    position: [40.0, 40.0]
+    orientation: [0.9239,0,0,0.3827]
+    velocity: 2.0
+    yaw_rate: 0.0
+    safety_radius: 2
+  - tag: "dynamic_obstacle_2"
+    position: [35.0, 35.0]
+    orientation: [0.7071,0,0,0.7071]
+    velocity: 1.0
+    yaw_rate: 0.0
+    safety_radius: 5
+  - tag: "dynamic_obstacle_3"
+    position: [15.0, 15.0]
+    orientation: [0.7071,0,0,0.7071]
+    velocity: 1.0
+    yaw_rate: 0.0
+    safety_radius: 5
+
+dsf: 20.0

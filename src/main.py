@@ -2,70 +2,39 @@ import sys
 import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from colav_unsafe_set.objects import (
-    DynamicObject,
-    DynamicObstacle,
-    Configuration,
-)
 from colav_unsafe_set import create_unsafe_set
 
-agent_vessel = DynamicObject(
-    configuration=Configuration(
-        pose=Configuration.Pose(
-            position=Configuration.Pose.Position(x=0.0, y=0.0, z=0.0),
-            orientation=Configuration.Pose.Orientation(x=0.0, y=0.0, z=0.0, w=0.0),
-        ),
-        yaw_rate=0.0,
-        velocity=0.0,
-    ),
-    safety_radius=5.0,
-)
-
-dynamic_obstacles = list(
-    [
-        DynamicObstacle(
-            id="1",
-            object=DynamicObject(
-                configuration=Configuration(
-                    pose=Configuration.Pose(
-                        position=Configuration.Pose.Position(x=0.0, y=0.0, z=0.0),
-                        orientation=Configuration.Pose.Orientation(
-                            x=0.0, y=0.0, z=0.0, w=0.0
-                        ),
-                    ),
-                    yaw_rate=0.0,
-                    velocity=0.0,
-                ),
-                safety_radius=5.0,
-            ),
-        ),
-        DynamicObstacle(
-            id="2",
-            object=DynamicObject(
-                configuration=Configuration(
-                    pose=Configuration.Pose(
-                        position=Configuration.Pose.Position(x=10.0, y=0.0, z=0.0),
-                        orientation=Configuration.Pose.Orientation(
-                            x=0.0, y=0.0, z=0.0, w=1.0
-                        ),
-                    ),
-                    yaw_rate=0.1,
-                    velocity=10.0,
-                ),
-                safety_radius=3.0,
-            ),
-        ),
-    ]
-)
-
-dsf = 1.0
-
-
 def main():
-    polyshape = create_unsafe_set(
-        agent_vessel=agent_vessel, dynamic_obstacles=dynamic_obstacles, dsf=dsf
+    from colav_unsafe_set.objects import DynamicObstacle, Agent
+
+    agent = Agent(
+        position=(float(10), float(10), float(10)),
+        orientation=(float(0), float(0), float(0), float(1)),
+        velocity=float(15.0),
+        yaw_rate=float(0.2),
+        safety_radius=float(5)
     )
-    print(polyshape)
+    dynamic_obstacles = [   
+        DynamicObstacle(
+            tag='obstacle 1',
+            position=(float(30), float(20), float(0)),
+            orientation=(float(0), float(0), float(0), float(1)),
+            velocity=float(20.0),
+            yaw_rate=float(0.1),
+            safety_radius=float(10.0)
+        ),
+        DynamicObstacle(
+            tag='obstacle 1',
+            position=(float(5), float(7), float(0)),
+            orientation=(float(0), float(0), float(0), float(1)),
+            velocity=float(10.0),
+            yaw_rate=float(0.1),
+            safety_radius=float(7.0)
+        )    
+    ]
+
+    vertices = create_unsafe_set(agent=agent, dynamic_obstacles=dynamic_obstacles, dsf=float(10))
+    print(vertices)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,19 @@
+matrix:
+  width: 100.0
+  height: 100.0
+agent_vessel: 
+  position: [50.0, 50.0]
+  orientation: [1.0, 0.0, 0.0, 0.0]
+  velocity: 5.0
+  yaw_rate: 0.0
+  safety_radius: 5.0
+
+obstacles:
+  - tag: "static obstacle"
+    position: [70.0, 50.0]
+    orientation: [0.0, 0.0, 0.0, 1.0]
+    velocity: 5.0
+    yaw_rate: 0.0
+    safety_radius: 10
+
+dsf: 20.0

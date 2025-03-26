@@ -1,0 +1,7 @@
+numpy
+scipy
+pytest
+hatch
+pyyaml
+matplotlib
+pandas

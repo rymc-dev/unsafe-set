@@ -26,7 +26,8 @@ dependencies = [
   "hatch",
   "pyyaml",
   "protobuf (<=3.20.1)",
-  "lark"
+  "lark",
+  "scipy"  # Add this line
 ]
 [project.urls]
 Documentation = "https://github.com/RyanMcKeeQUB/colav-unsafe-set/blob/main/README.md"
@@ -40,7 +41,7 @@ path = "src/__about__.py"
 check = "mypy --install-types --non-interactive {args:src/ tests}"
 
 [tool.hatch.envs.test]
-dependencies = ["pytest","lark", "pyyaml"]
+dependencies = ["pytest","lark", "pyyaml", "hatch", "numpy", "scipy"]
 
 [tool.hatch.envs.test.types.scripts]
 run = "pytest test/indices_of_interest/test_indices_of_interest.py"

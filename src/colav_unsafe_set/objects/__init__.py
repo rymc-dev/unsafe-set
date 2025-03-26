@@ -1,6 +1,7 @@
-from .configuration import Configuration
-from .dynamic_object import DynamicObject
-from .dynamic_obstacle import DynamicObstacle
-from .dynamic_obstacle_with_metrics import DynamicObstacleWithMetrics
+from .objects import (
+    Agent,
+    DynamicObstacle,
+    DynamicObstacleWithMetrics
+)
 
-__all__ = ['Configuration', 'DynamicObject', 'DynamicObstacle', 'DynamicObstacleWithMetrics']
+__all__ = ['Agent', 'DynamicObstacle', 'DynamicObstacleWithMetrics']
