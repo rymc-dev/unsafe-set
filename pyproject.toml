@@ -27,6 +27,8 @@ dependencies = [
   "pyyaml",
   "protobuf (<=3.20.1)",
   "lark",
+  "matplotlib",
+  "pandas",
   "scipy"  # Add this line
 ]
 [project.urls]
@@ -41,7 +43,7 @@ path = "src/__about__.py"
 check = "mypy --install-types --non-interactive {args:src/ tests}"
 
 [tool.hatch.envs.test]
-dependencies = ["pytest","lark", "pyyaml", "hatch", "numpy", "scipy"]
+dependencies = ["pytest","lark", "pyyaml", "hatch", "numpy", "scipy", "matplotlib", "pandas"]
 
 [tool.hatch.envs.test.types.scripts]
 run = "pytest test/indices_of_interest/test_indices_of_interest.py"
