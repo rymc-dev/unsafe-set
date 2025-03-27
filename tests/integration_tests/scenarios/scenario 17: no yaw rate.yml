@@ -1,0 +1,38 @@
+matrix:
+  width: 400.0
+  height: 400.0
+
+agent_vessel:
+  position: [40.0, 50.0]
+  orientation: [-0.3345, 0.4325, 0.2367, 0.8723]
+  velocity: 6.0
+  yaw_rate: 0.0
+  safety_radius: 7.0
+
+obstacles:
+  - tag: "obstacle_1"
+    position: [55.0, 75.0]
+    orientation: [0.9239, 0, 0, 0.3827]
+    velocity: 3.2
+    yaw_rate: 0.0
+    safety_radius: 4.2
+  - tag: "obstacle_2"
+    position: [65.0, 40.0]
+    orientation: [0.7071, 0, 0, 0.7071]
+    velocity: 4.1
+    yaw_rate: 0.0
+    safety_radius: 3.8
+  - tag: "obstacle_3"
+    position: [80.0, 110.0]
+    orientation: [1.0, 0, 0, 0]
+    velocity: 3.5
+    yaw_rate: 0.0
+    safety_radius: 5.3
+  - tag: "obstacle_4"
+    position: [90.0, 90.0]
+    orientation: [0.7071, 0, 0, 0.7071]
+    velocity: 2.0
+    yaw_rate: 0.0
+    safety_radius: 6.0
+
+dsf: 100.0

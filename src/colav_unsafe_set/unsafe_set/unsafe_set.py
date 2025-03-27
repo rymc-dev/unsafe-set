@@ -47,6 +47,7 @@ def create_unsafe_set(
     I3 = calc_I3(
         dynamic_obstacles_with_metrics=dynamic_obstacle_metrics,
         dsf=dsf,
+        time_of_interest=15
     )
 
     # Unionize the indices of interest.

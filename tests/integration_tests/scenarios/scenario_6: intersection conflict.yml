@@ -1,10 +1,10 @@
 matrix:
-  width: 100.0
-  height: 100.0
+  width: 400.0
+  height: 400.0
 
 agent_vessel: 
   position: [20.0, 80.0]
-  orientation: [1.0, 0.0, 0.0, 0.0]
+  orientation: [-0.50266497, 0.6317441 , 0.15343324, 0.56981186]
   velocity: 4.0
   yaw_rate: 0.0
   safety_radius: 5.0

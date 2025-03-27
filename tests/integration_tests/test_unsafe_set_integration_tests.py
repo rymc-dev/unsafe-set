@@ -41,6 +41,30 @@ def quaternion_to_yaw(quaternion):
     r = R.from_quat([quaternion[1], quaternion[2], quaternion[3], quaternion[0]])  # (x, y, z, w)
     return r.as_euler('xyz', degrees=False)[2]  # Yaw (rotation about Z-axis)
 
+def draw_elongated_triangle(ax, position, orientation, length=5, width=2):
+    """Draw an elongated triangle representing an object at a given position and orientation."""
+    # Add π to flip the orientation by 180° if necessary
+    yaw = quaternion_to_yaw(orientation) # + np.pi
+    
+    # Define the triangle in the local frame:
+    # Tip at (length, 0), and the base at (0, ±width/2)
+    triangle = np.array([
+        [length, 0],          # Tip (forward)
+        [0, -width / 2],      # Base left
+        [0, width / 2]        # Base right
+    ])
+    
+    # Build the rotation matrix from the yaw angle
+    rotation_matrix = np.array([
+        [np.cos(yaw), -np.sin(yaw)],
+        [np.sin(yaw),  np.cos(yaw)]
+    ])
+    
+    # Rotate the triangle vertices and then translate to the world position
+    rotated_triangle = (rotation_matrix @ triangle.T).T + position
+    
+    # Add the rotated triangle to the plot
+    ax.add_patch(patches.Polygon(rotated_triangle, closed=True, facecolor='black'))
 
 def plot_scenario(agent, obstacles, unsafe_set_vertices, width, height, scenario_name):
     """Generate and save a plot of the scenario."""
@@ -53,18 +77,20 @@ def plot_scenario(agent, obstacles, unsafe_set_vertices, width, height, scenario
 
     # Plot agent vessel
     ax.add_patch(plt.Circle(agent.position, agent.safety_radius, facecolor='blue', alpha=0.8, edgecolor='black'))
-    ax.add_patch(patches.RegularPolygon(
-        agent.position, numVertices=3, radius=2,
-        orientation=quaternion_to_yaw(agent.orientation), facecolor='black'
-    ))
+    draw_elongated_triangle(ax, agent.position, agent.orientation)
+    # ax.add_patch(patches.RegularPolygon(
+    #     agent.position, numVertices=3, radius=2,
+    #     orientation=quaternion_to_yaw(agent.orientation), facecolor='black'
+    # ))
 
     # Plot obstacles
     for obstacle in obstacles:
         ax.add_patch(plt.Circle(obstacle.position, obstacle.safety_radius, facecolor='red', alpha=0.5, edgecolor='black'))
-        ax.add_patch(patches.RegularPolygon(
-            obstacle.position, numVertices=3, radius=2,
-            orientation=quaternion_to_yaw(obstacle.orientation), facecolor='black'
-        ))
+        draw_elongated_triangle(ax, obstacle.position, obstacle.orientation)
+        # ax.add_patch(patches.RegularPolygon(
+        #     obstacle.position, numVertices=3, radius=2,
+        #     orientation=quaternion_to_yaw(obstacle.orientation), facecolor='black'
+        # ))
 
     # Configure plot aesthetics
     ax.grid(color='black', linestyle='--', linewidth=0.5)

@@ -60,6 +60,10 @@ def calc_I2(
 def calc_I3(
     dynamic_obstacles_with_metrics: List[DynamicObstacleWithMetrics],
     dsf: float,
+    time_of_interest: float
 ) -> List[DynamicObstacleWithMetrics]:
-    """Calculate the set of obstacles whose DCPA is within the distance safety threshold."""
-    return [dob for dob in dynamic_obstacles_with_metrics if dob.dcpa <= dsf]
+    """Calculate the set of obstacles whose DCPA at the time of TCPA is within the distance safety threshold."""
+    return [
+        dob for dob in dynamic_obstacles_with_metrics 
+        if dob.dcpa <= dsf and dob.tcpa <= time_of_interest
+    ]

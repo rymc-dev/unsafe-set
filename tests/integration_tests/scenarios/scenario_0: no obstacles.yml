@@ -1,6 +1,7 @@
 matrix:
-  width: 100.0
-  height: 100.0
+  width: 400.0
+  height: 400.0
+  
 agent_vessel: 
   position: [50.0, 50.0]
   orientation: [1.0, 0.0, 0.0, 0.0]
