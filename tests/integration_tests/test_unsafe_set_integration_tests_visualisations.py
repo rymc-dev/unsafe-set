@@ -38,9 +38,18 @@ def quaternion_to_yaw(quaternion):
     r = R.from_quat([quaternion[1], quaternion[2], quaternion[3], quaternion[0]])  # (x, y, z, w)
     return r.as_euler('xyz', degrees=False)[2]  # Yaw (rotation about Z-axis)
 
+# def quaternion_to_yaw(q):
+#     """Convert quaternion (w, x, y, z) to yaw (heading) angle in radians."""
+#     w, x, y, z = q
+#     return np.arctan2(2 * (w * z + x * y), 1 - 2 * (y ** 2 + z ** 2))
+
+def normalize_angle(angle):
+    """Normalize angle to the range [-π, π]."""
+    return (angle + np.pi) % (2 * np.pi) - np.pi
+
 def compute_triangle_vertices(position, orientation, length=5, width=2):
     """Compute vertices of an elongated triangle for a given position and orientation."""
-    yaw = quaternion_to_yaw(orientation)
+    yaw = normalize_angle(quaternion_to_yaw(orientation))
     # Define the triangle in the local frame: tip at (length, 0) and base at (0, ±width/2)
     triangle = np.array([
         [length, 0],
@@ -68,7 +77,7 @@ def update_orientation(orientation, yaw_rate):
     Assuming the timestep is 1 frame (you can adjust this as needed).
     """
     # Convert quaternion to yaw, add yaw rate, and convert back to quaternion
-    yaw = quaternion_to_yaw(orientation)
+    yaw = normalize_angle(quaternion_to_yaw(orientation))
     new_yaw = yaw + yaw_rate  # Update yaw by yaw_rate
     return yaw_to_quaternion(new_yaw)
 
@@ -144,8 +153,8 @@ def plot_scenario(agent, obstacles, width, height, scenario_name, dsf, animate=F
         # Update agent orientation and position.
         agent.orientation = update_orientation(agent.orientation, agent.yaw_rate)
         delta_agent = np.array([
-            np.cos(quaternion_to_yaw(agent.orientation)) * agent.velocity,
-            np.sin(quaternion_to_yaw(agent.orientation)) * agent.velocity
+            np.cos(normalize_angle(quaternion_to_yaw(agent.orientation))) * agent.velocity,
+            np.sin(normalize_angle(quaternion_to_yaw(agent.orientation))) * agent.velocity
         ])
         agent.position += delta_agent
         agent_circle.center = agent.position
@@ -157,8 +166,8 @@ def plot_scenario(agent, obstacles, width, height, scenario_name, dsf, animate=F
         for i, obstacle in enumerate(obstacles):
             obstacle.orientation = update_orientation(obstacle.orientation, obstacle.yaw_rate)
             delta_obs = np.array([
-                np.cos(quaternion_to_yaw(obstacle.orientation)) * obstacle.velocity,
-                np.sin(quaternion_to_yaw(obstacle.orientation)) * obstacle.velocity
+                np.cos(normalize_angle(quaternion_to_yaw(obstacle.orientation))) * obstacle.velocity,
+                np.sin(normalize_angle(quaternion_to_yaw(obstacle.orientation))) * obstacle.velocity
             ])
             obstacle.position += delta_obs
             obstacle_circles[i].center = obstacle.position
@@ -181,7 +190,7 @@ def plot_scenario(agent, obstacles, width, height, scenario_name, dsf, animate=F
             (
                 f"Obstacle Tag: {obstacle.dynamic_obstacle.tag}\n"
                 f"Position: {obstacle.dynamic_obstacle.position}\n"
-                f"Orientation: {quaternion_to_yaw(obstacle.dynamic_obstacle.orientation)}\n"
+                f"Orientation: {normalize_angle(quaternion_to_yaw(obstacle.dynamic_obstacle.orientation))}\n"
                 f"Velocity: {obstacle.dynamic_obstacle.velocity}\n"
                 f"yaw_rate: {obstacle.dynamic_obstacle.yaw_rate}\n"
                 f"TCPA: {obstacle.tcpa:.2f}\n"
@@ -200,7 +209,7 @@ def plot_scenario(agent, obstacles, width, height, scenario_name, dsf, animate=F
             "Agent Metadata\n"
             f"Tag: Agent Vessel\n"
             f"Position: {agent.position}\n"
-            f"Orientation (yaw): {quaternion_to_yaw(agent.orientation):.2f}\n"
+            f"Orientation (yaw): {normalize_angle(quaternion_to_yaw(agent.orientation)):.2f}\n"
             f"Velocity: {agent.velocity}\n"
             f"yaw_rate: {agent.yaw_rate}\n\n"
             "Obstacle Metadata\n"
