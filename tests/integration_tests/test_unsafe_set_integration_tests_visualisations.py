@@ -94,24 +94,39 @@ def yaw_to_quaternion(yaw):
     qz = np.sin(yaw / 2)
     return np.array([qw, qx, qy, qz])
 
+import matplotlib.gridspec as gridspec
+
 def plot_scenario(agent, obstacles, width, height, scenario_name, dsf, animate=False):
     """Generate and optionally animate a plot of the scenario."""
-    fig, ax = plt.subplots()
-
-    # Calculate half of the width and height to set axis limits centered at (0, 0)
+    # Create a figure with a specified size (width x height in inches)
+    fig = plt.figure(figsize=(12, 6))
+    
+    # Define a grid with 1 row and 2 columns, using width ratios so that the plot is larger.
+    gs = gridspec.GridSpec(1, 2, width_ratios=[3, 1])
+    
+    # Main animation plot on the left panel.
+    ax = fig.add_subplot(gs[0])
     half_width = width / 2
     half_height = height / 2
-
-    # Set axis limits from -half_width to half_width and -half_height to half_height
     ax.set_xlim(-half_width, half_width)
     ax.set_ylim(-half_height, half_height)
-
-    # Add grid with intervals based on width/height
     ax.grid(color='black', linestyle='--', linewidth=0.5)
-    ax.set_xticks(np.arange(-half_width, half_width + 1, 50))  # Set X ticks at intervals of 50
-    ax.set_yticks(np.arange(-half_height, half_height + 1, 50))  # Set Y ticks at intervals of 50
+    ax.set_xticks(np.arange(-half_width, half_width + 1, 50))
+    ax.set_yticks(np.arange(-half_height, half_height + 1, 50))
+    ax.set_xlabel('X Position')
+    ax.set_ylabel('Y Position')
+    ax.set_facecolor('white')
+    fig.patch.set_facecolor('white')
 
-    # Plot agent and obstacles at the initial positions
+    # Metrics panel on the right panel.
+    metrics_ax = fig.add_subplot(gs[1])
+    metrics_ax.axis('off')  # Hide axis lines for the metrics panel
+
+    # Create a text object in the metrics panel.
+    metrics_text = metrics_ax.text(0, 0.95, "", transform=metrics_ax.transAxes,
+                                   va='top', fontsize=6, family='monospace')
+
+    # Plot agent and obstacles at the initial positions.
     agent_circle = ax.add_patch(plt.Circle(agent.position, agent.safety_radius,
                                            facecolor='blue', alpha=0.8, edgecolor='black'))
     agent_triangle = draw_elongated_triangle(ax, agent.position, agent.orientation)
@@ -125,17 +140,9 @@ def plot_scenario(agent, obstacles, width, height, scenario_name, dsf, animate=F
         obstacle_circles.append(obstacle_circle)
         obstacle_triangles.append(triangle_patch)
 
-    # Configure plot aesthetics
-    ax.set_xlabel('X Position')
-    ax.set_ylabel('Y Position')
-    ax.set_facecolor('white')
-    fig.patch.set_facecolor('white')
-
     def update(frame):
-        # Update agent orientation based on its yaw_rate
+        # Update agent orientation and position.
         agent.orientation = update_orientation(agent.orientation, agent.yaw_rate)
-        
-        # Update agent position based on its orientation and velocity
         delta_agent = np.array([
             np.cos(quaternion_to_yaw(agent.orientation)) * agent.velocity,
             np.sin(quaternion_to_yaw(agent.orientation)) * agent.velocity
@@ -143,16 +150,12 @@ def plot_scenario(agent, obstacles, width, height, scenario_name, dsf, animate=F
         agent.position += delta_agent
         agent_circle.center = agent.position
 
-        # Recompute agent triangle vertices and update patch
         new_agent_vertices = compute_triangle_vertices(agent.position, agent.orientation)
         agent_triangle.set_xy(new_agent_vertices)
 
-        # Update obstacles' positions and their orientations based on yaw_rate
+        # Update obstacles.
         for i, obstacle in enumerate(obstacles):
-            # Update obstacle orientation based on its yaw_rate
             obstacle.orientation = update_orientation(obstacle.orientation, obstacle.yaw_rate)
-
-            # Update obstacle position based on its velocity and new orientation
             delta_obs = np.array([
                 np.cos(quaternion_to_yaw(obstacle.orientation)) * obstacle.velocity,
                 np.sin(quaternion_to_yaw(obstacle.orientation)) * obstacle.velocity
@@ -160,72 +163,90 @@ def plot_scenario(agent, obstacles, width, height, scenario_name, dsf, animate=F
             obstacle.position += delta_obs
             obstacle_circles[i].center = obstacle.position
 
-            # Recompute obstacle triangle vertices and update patch
             new_obs_vertices = compute_triangle_vertices(obstacle.position, obstacle.orientation)
             obstacle_triangles[i].set_xy(new_obs_vertices)
 
-        # Create or update the unsafe set patch
+        # Compute metrics.
         from colav_unsafe_set.risk_assessment import calculate_obstacle_metrics_for_agent
-        dynamic_obstacle_metrics = calculate_obstacle_metrics_for_agent(
-            agent,
-            obstacles
-        )
-
-        pprint(dynamic_obstacle_metrics)
+        dynamic_obstacle_metrics = calculate_obstacle_metrics_for_agent(agent, obstacles)
 
         from colav_unsafe_set.indices_of_interest import calc_I1, calc_I2, calc_I3, unionise_indices_of_interest
-        I1 = calc_I1(
-            agent=agent,
-            dynamic_obstacles_with_metrics=dynamic_obstacle_metrics,
-            dsf=dsf,
-        )
-        I2 = calc_I2(
-            I1=I1,
-            dynamic_obstacles_with_metrics=dynamic_obstacle_metrics,
-            dsf=dsf,
-        )
-        I3 = calc_I3(
-            dynamic_obstacles_with_metrics=dynamic_obstacle_metrics,
-            dsf=dsf,
-            time_of_interest=15
-        )
+        I1 = calc_I1(agent=agent, dynamic_obstacles_with_metrics=dynamic_obstacle_metrics, dsf=dsf)
+        I2 = calc_I2(I1=I1, dynamic_obstacles_with_metrics=dynamic_obstacle_metrics, dsf=dsf)
+        I3 = calc_I3(dynamic_obstacles_with_metrics=dynamic_obstacle_metrics, dsf=dsf, time_of_interest=15)
         uIoI = unionise_indices_of_interest(I1, I2, I3)
-        pprint(f'I1: {I1}')
-        pprint(f'I2: {I1}')
-        pprint(f'I3: {I1}')
-        pprint(f'UIoI: {uIoI}')
 
+        # Generate obstacle metadata string
+        obstacle_metadata = "\n".join([
+            (
+                f"Obstacle Tag: {obstacle.dynamic_obstacle.tag}\n"
+                f"Position: {obstacle.dynamic_obstacle.position}\n"
+                f"Orientation: {quaternion_to_yaw(obstacle.dynamic_obstacle.orientation)}\n"
+                f"Velocity: {obstacle.dynamic_obstacle.velocity}\n"
+                f"yaw_rate: {obstacle.dynamic_obstacle.yaw_rate}\n"
+                f"TCPA: {obstacle.tcpa:.2f}\n"
+                f"DCPA: {obstacle.dcpa:.2f}\n"
+            )
+            for obstacle in dynamic_obstacle_metrics
+        ])
+
+        from datetime import datetime
+        # Update metrics text
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        metrics_str = (
+            "Scenario Metadata\n"
+            f"Distance Threshold (meters): {dsf}\n"
+            f"Timestamp: {timestamp}\n\n"
+            "Agent Metadata\n"
+            f"Tag: Agent Vessel\n"
+            f"Position: {agent.position}\n"
+            f"Orientation (yaw): {quaternion_to_yaw(agent.orientation):.2f}\n"
+            f"Velocity: {agent.velocity}\n"
+            f"yaw_rate: {agent.yaw_rate}\n\n"
+            "Obstacle Metadata\n"
+            f"{obstacle_metadata}\n\n"
+            "Indices Of Interest\n"
+            f"I1: {[obstacle.dynamic_obstacle.tag for obstacle in I1]}\n"
+            f"I2: {[obstacle.dynamic_obstacle.tag for obstacle in I2]}\n"
+            f"I3: {[obstacle.dynamic_obstacle.tag for obstacle in I3]}\n\n"
+            f"uIoI: {[obstacle.dynamic_obstacle.tag for obstacle in uIoI]}\n\n"
+        )
+
+        metrics_text.set_text(metrics_str)
+
+        # Create or update the unsafe set patch.
         unsafe_set_vertices = create_unsafe_set(agent, obstacles, dsf)
         if unsafe_set_vertices:
-            if not hasattr(update, 'unsafe_patch'):  # If unsafe_patch does not exist, create it
+            if not hasattr(update, 'unsafe_patch'):
                 update.unsafe_patch = patches.Polygon(unsafe_set_vertices, closed=True, edgecolor='black',
-                                                    facecolor='#ff7f0e', alpha=0.5)
-                ax.add_patch(update.unsafe_patch)  # Add it to the axis
+                                                        facecolor='#ff7f0e', alpha=0.5)
+                ax.add_patch(update.unsafe_patch)
             else:
-                update.unsafe_patch.set_xy(unsafe_set_vertices)  # Update the existing patch
+                update.unsafe_patch.set_xy(unsafe_set_vertices)
         else:
             if hasattr(update, 'unsafe_patch'):
-                update.unsafe_patch.set_visible(False)  # Hide the patch if no unsafe set exists
+                update.unsafe_patch.set_visible(False)
 
-        # Return a list of Artist objects to be animated
-        return [agent_circle, agent_triangle] + obstacle_circles + obstacle_triangles + \
-            ([update.unsafe_patch] if hasattr(update, 'unsafe_patch') and update.unsafe_patch.get_visible() else [])
-
+        artists = [agent_circle, agent_triangle] + obstacle_circles + obstacle_triangles
+        if hasattr(update, 'unsafe_patch') and update.unsafe_patch.get_visible():
+            artists.append(update.unsafe_patch)
+        artists.append(metrics_text)
+        return artists
 
     if animate:
+        from matplotlib.animation import FuncAnimation
         ani = FuncAnimation(fig, update, frames=range(100), interval=100, blit=True)
-        plt.title(f"Animation for {scenario_name}")
+        plt.suptitle(f"Animation for {scenario_name}")
         gif_path = PLOT_DIR / f"{scenario_name.replace(':', '_')}_animation.gif"
-        # Save the animation as a GIF using the Pillow writer
         ani.save(gif_path, writer='pillow', fps=10)
         plt.close()
     else:
-        plt.title(f"{scenario_name}")
+        plt.suptitle(f"{scenario_name}")
         plt.xlabel("X-Axis (meters)")
         plt.ylabel("Y-Axis (meters)")
-        # Save the static plot image in the specified folder
         plt.savefig(PLOT_DIR / f"{scenario_name.replace(':', '_')}_plot.png", facecolor=fig.get_facecolor())
         plt.close()
+
 
 @pytest.mark.parametrize("scenario_file", get_scenario_files())
 def test_unsafe_set_gen(scenario_file):

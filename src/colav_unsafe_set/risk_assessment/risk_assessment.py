@@ -6,6 +6,16 @@ from colav_unsafe_set.objects import (
     DynamicObstacle
 )
 
+def quaternion_to_yaw(q):
+    """Convert quaternion (w, x, y, z) to yaw (heading) angle in radians."""
+    w, x, y, z = q
+    return np.arctan2(2 * (w * z + x * y), 1 - 2 * (y ** 2 + z ** 2))
+
+def normalize_angle(angle):
+    """Normalize angle to the range [-π, π]."""
+    return (angle + np.pi) % (2 * np.pi) - np.pi
+
+
 def calc_cpa(
     agent_object: Agent, target_object: DynamicObstacle
 ) -> Tuple[float, float]:
@@ -35,14 +45,9 @@ def calc_cpa(
     ])
 
     # Calculate heading angles (theta) using quaternion components.
-    theta1 = np.arctan2(
-        2 * (agent_object.orientation[3] * agent_object.orientation[2]),
-        1 - 2 * (agent_object.orientation[2] ** 2)
-    )
-    theta2 = np.arctan2(
-        2 * (target_object.orientation[3] * target_object.orientation[2]),
-        1 - 2 * (target_object.orientation[2] ** 2)
-    )
+    theta1 = normalize_angle(quaternion_to_yaw(agent_object.orientation))
+    theta2 = normalize_angle(quaternion_to_yaw(target_object.orientation))
+
 
     # Compute the velocity vectors based on speed and heading angle.
     v1 = np.array([
