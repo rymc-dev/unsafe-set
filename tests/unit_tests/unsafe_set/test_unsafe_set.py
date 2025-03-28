@@ -134,9 +134,9 @@
 #     assert isinstance(result, list)
 
 
-def main():
-    pytest.main()
+# def main():
+#     pytest.main()
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
