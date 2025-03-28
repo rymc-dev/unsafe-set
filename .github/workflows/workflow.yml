@@ -62,7 +62,7 @@ jobs:
 
   deploy:
     name: Publish to PyPI if Release
-    # needs: test
+    needs: test
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
 
