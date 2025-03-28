@@ -165,6 +165,36 @@ def plot_scenario(agent, obstacles, width, height, scenario_name, dsf, animate=F
             obstacle_triangles[i].set_xy(new_obs_vertices)
 
         # Create or update the unsafe set patch
+        from colav_unsafe_set.risk_assessment import calculate_obstacle_metrics_for_agent
+        dynamic_obstacle_metrics = calculate_obstacle_metrics_for_agent(
+            agent,
+            obstacles
+        )
+
+        pprint(dynamic_obstacle_metrics)
+
+        from colav_unsafe_set.indices_of_interest import calc_I1, calc_I2, calc_I3, unionise_indices_of_interest
+        I1 = calc_I1(
+            agent=agent,
+            dynamic_obstacles_with_metrics=dynamic_obstacle_metrics,
+            dsf=dsf,
+        )
+        I2 = calc_I2(
+            I1=I1,
+            dynamic_obstacles_with_metrics=dynamic_obstacle_metrics,
+            dsf=dsf,
+        )
+        I3 = calc_I3(
+            dynamic_obstacles_with_metrics=dynamic_obstacle_metrics,
+            dsf=dsf,
+            time_of_interest=15
+        )
+        uIoI = unionise_indices_of_interest(I1, I2, I3)
+        pprint(f'I1: {I1}')
+        pprint(f'I2: {I1}')
+        pprint(f'I3: {I1}')
+        pprint(f'UIoI: {uIoI}')
+
         unsafe_set_vertices = create_unsafe_set(agent, obstacles, dsf)
         if unsafe_set_vertices:
             if not hasattr(update, 'unsafe_patch'):  # If unsafe_patch does not exist, create it

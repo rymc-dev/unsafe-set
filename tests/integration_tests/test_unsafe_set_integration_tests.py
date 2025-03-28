@@ -118,7 +118,7 @@ def test_unsafe_set_gen(scenario_file):
         obstacles = [DynamicObstacle(**obs) for obs in scenario.get('obstacles', [])]
     else:
         obstacles = []
-
+    
     unsafe_set_vertices = create_unsafe_set(agent, obstacles, scenario.get('dsf'))
     plot_scenario(agent, obstacles, unsafe_set_vertices, width, height, scenario_file.stem)
 
