@@ -26,6 +26,16 @@ Show image of geometric unsafe set:
 pip install colav-unsafe-set
 ```
 
+risk assessment collision metrics summary
+
+| Case                  | v_rel_norm_sq | p_rel == [0, 0] | tcpa > 0 | DCPA                         | TCPA                      |
+|-----------------------|---------------|-----------------|----------|------------------------------|---------------------------|
+| 1.1 Identical position | < 1e-6        | ✅              | –        | NaN                          | inf                       |
+| 1.2 Stationary, offset | < 1e-6        | ❌              | –        | ‖p_rel‖                     | ‖p_rel‖ / ‖v1‖ (or inf)  |
+| 2.1 Future CPA         | ≥ 1e-6        | –               | ✅       | ‖p_rel + tcpa * v_rel‖       | computed tcpa             |
+| 2.2 CPA in past        | ≥ 1e-6        | –               | ❌       | NaN                          | NaN                       |
+
+
 ## Structure
 
 ## Usage
