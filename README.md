@@ -49,9 +49,10 @@ When pkg is installed, Using it is simple imports are as follows.
 
 This repository is developed and maintained by:
 
-- **Ryan McKee**
-- **Nikolaos Athanasopoulos**
-- **Wasif Naeem**
+- **[Ryan McKee](https://github.com/rymc-dev)**
+- **[Nikolaos Athanasopoulos](https://github.com/<username>)**
+- **[Wasif Naeem](https://github.com/<username>)**
+
 
 ## References
 
