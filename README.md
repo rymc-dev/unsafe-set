@@ -45,6 +45,25 @@ When pkg is installed, Using it is simple imports are as follows.
 ```
 
 
+## Collaborators
+
+This repository is developed and maintained by:
+
+- **Ryan McKee**
+- **Nikolaos Athanasopoulos**
+- **Wasif Naeem**
+
+## References
+
+This project provides a Python implementation of the unsafe set risk-assessment method for motion planning as defined in the following research work:
+
+### Primary Reference (Unsafe Set Definition)
+
+> A. Author(s), *“Geometric Motion Planning in Dynamic Environments,”* Journal/Conference, Year.  
+> *(Replace with full citation once available.)*
+
+If the specific paper is published, provide the full citation (title, authors, venue, year), and I can format it in **IEEE**, **APA**, or **BibTeX** style.
+
 ## License
 
 `colav-unsafe-set` is distributed under the terms of the [MIT](https://github.com/RyanMcKeeQUB/colav-unsafe-set/tree/main/LICENSE) license.
